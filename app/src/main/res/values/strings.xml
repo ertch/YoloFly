@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Butterfly Detector</string>
+    <string name="camera_permission_denied">Kamera-Berechtigung erforderlich</string>
+    <string name="auto_capture_mode">Auto-Modus: %d/30 Fotos</string>
+    <string name="manual_capture_mode">Manueller Modus</string>
+    <string name="butterfly_detected">Schmetterling erkannt: %s (%.1f%%)</string>
+    <string name="capture_photo">Foto aufnehmen</string>
+    <string name="view_gallery">Galerie anzeigen</string>
+    <string name="confidence_threshold">Konfidenz: %.1f%%</string>
+    <string name="processing">Verarbeite...</string>
+    <string name="no_butterfly_detected">Kein Schmetterling erkannt</string>
+    <string name="gallery_title">Top 9 Erkennungen</string>
+    <string name="back_to_camera">Zurück zur Kamera</string>
+</resources>

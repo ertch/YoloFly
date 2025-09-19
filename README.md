@@ -1,88 +1,82 @@
-# Butterfly Detector Android App
+# TensorFlow / YOLO Training Branch 🤖
 
-Eine Android-App zur automatischen Schmetterlings-Erkennung mit YOLO und TensorFlow Lite.
+Dieser Branch ist ausschließlich für das Training von YOLO-Modellen für Schmetterlings-Erkennung vorgesehen.
 
-## Features
+## Setup
 
-- **Automatische Erkennung**: Kamera startet direkt und erkennt Schmetterlinge in Echtzeit
-- **Auto-Foto-Modus**: Nimmt automatisch 30 Fotos bei Schmetterlings-Erkennung auf
-- **Manueller Modus**: Nach 30 Fotos wechselt die App in den manuellen Fotografier-Modus
-- **Top-9-Galerie**: Zeigt die 9 Fotos mit der höchsten Erkennungsrate an
-- **TensorFlow Lite Integration**: Optimiert für mobile Geräte
-
-## Setup in Android Studio
-
-1. **Projekt importieren**:
-   ```
-   File → Open → taiwan-workshop-ai Ordner auswählen
-   ```
-
-2. **YOLO-Modell hinzufügen**:
-   - Dein trainiertes Schmetterlings-Modell nach `app/src/main/assets/butterfly_model.tflite` kopieren
-   - Falls nötig, Labels in `app/src/main/assets/butterfly_labels.txt` anpassen
-
-3. **Build & Run**:
-   ```
-   Build → Rebuild Project
-   Run → Run 'app'
-   ```
-
-## Projektstruktur
-
-```
-app/
-├── src/main/
-│   ├── java/com/butterfly/detector/
-│   │   ├── MainActivity.kt              # Haupt-Kamera-Activity
-│   │   ├── GalleryActivity.kt           # Top-9-Fotos Galerie
-│   │   ├── ml/ButterflyDetector.kt      # TensorFlow Lite Integration
-│   │   ├── model/DetectionResult.kt     # Erkennungs-Datenmodell
-│   │   ├── adapter/PhotoAdapter.kt      # RecyclerView Adapter
-│   │   └── utils/ImageUtils.kt          # Bild-Verarbeitungshelfer
-│   ├── res/
-│   │   ├── layout/                      # UI Layouts
-│   │   ├── values/                      # Strings, Colors, Themes
-│   │   └── xml/                         # Android Konfiguration
-│   └── assets/
-│       ├── butterfly_model.tflite      # DEIN TRAINIERTES MODELL HIER
-│       └── butterfly_labels.txt        # Schmetterlings-Klassen
-└── build.gradle                        # Dependencies & Build Config
+### 1. Python Environment
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Benötigte Berechtigungen
-
-- **Kamera**: Für Live-Vorschau und Foto-Aufnahme
-- **Speicher**: Für das Speichern der aufgenommenen Fotos
-
-## Dependencies
-
-- **CameraX**: Moderne Android Kamera-API
-- **TensorFlow Lite**: Mobile ML-Inferenz
-- **Glide**: Bild-Loading und -Caching
-- **Material Design**: Moderne UI-Komponenten
-
-## Anpassungen
-
-### Eigenes YOLO-Modell verwenden:
-1. Modell nach TensorFlow Lite konvertieren
-2. Als `butterfly_model.tflite` in `assets/` ablegen
-3. Labels in `butterfly_labels.txt` anpassen
-4. Falls nötig, Input-Größe in `ButterflyDetector.kt` anpassen
-
-### Erkennungs-Schwellwert ändern:
-```kotlin
-// In ButterflyDetector.kt
-private const val CONFIDENCE_THRESHOLD = 0.3f // Anpassen
+### 2. YOLO Training Dependencies
+```bash
+pip install ultralytics==8.2.90
+pip install torch==2.2.2 torchvision==0.17.2
+pip install opencv-python==4.9.0.80
+pip install matplotlib pandas numpy
 ```
 
-### Auto-Foto-Anzahl ändern:
-```kotlin
-// In MainActivity.kt
-if (autoPhotoCount >= 30) // Zahl anpassen
+### 3. Dataset Struktur
+```
+dataset/
+├── train/
+│   ├── images/
+│   └── labels/
+├── val/
+│   ├── images/
+│   └── labels/
+└── test/
+    ├── images/
+    └── labels/
 ```
 
-## Troubleshooting
+## Training Scripts
 
-- **Kamera startet nicht**: Berechtigungen in den App-Einstellungen prüfen
-- **Modell lädt nicht**: Dateiname und Pfad in `assets/` überprüfen
-- **Langsame Inferenz**: GPU-Delegate aktivieren (siehe `ButterflyDetector.kt`)
+### Basis YOLO Training
+```python
+from ultralytics import YOLO
+
+# Load pre-trained model
+model = YOLO('yolov8n.pt')
+
+# Train the model
+results = model.train(
+    data='butterfly_dataset.yaml',
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    name='butterfly_detection'
+)
+```
+
+### Zu TensorFlow Lite Export
+```python
+# Export trained model to TensorFlow Lite
+model.export(format='tflite', int8=True, imgsz=224)
+```
+
+## Schmetterlings-Klassen
+1. Admiral
+2. Bläuling
+3. Schwalbenschwanz
+4. Weißling
+5. Schachbrettfalter
+6. Tagpfauenauge
+7. Kleiner Fuchs
+8. C-Falter
+9. Distelfalter
+10. Zitronenfalter
+
+## Workflow
+
+1. **Dataset vorbereiten** → Bilder annotieren
+2. **YOLO trainieren** → `train_butterfly_yolo.py`
+3. **Modell evaluieren** → Validation & Test
+4. **TFLite konvertieren** → Für Android App
+5. **Integration** → In `vibecode-ertch` Branch
+
+---
+⚠️ **Hinweis**: Dieser Branch enthält nur Training-Code, keine Android App!

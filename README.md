@@ -4,31 +4,39 @@ Android App für automatische Schmetterlings-Erkennung mit YOLO und TensorFlow L
 
 ## Branches
 
-### 📱 Android App Development
-- **vibecode-ertch** - Vollständige Android Kotlin App Implementation (Working Branch)
+### Repository Management
+- **main** 
 
-### 🤖 KI Training 
-- **tensorflow-yolo-training** - TensorFlow/YOLO Modell-Training (Training Branch)
 
-### 🏠 Repository Management
-- **main** - Hauptbranch mit Übersicht
+### KI Training 
+- **tensorflow-yolo-training** - TensorFlow/YOLO Modell-Training [vibecoded] (Training Branch)
+
+
+### Android App Development
+- **vibecode-ertch** - Kotlin App [videcoded] (Working Branch ertch)
+
+
 
 ## Features
 
-### Android App (vibecode-ertch Branch)
-- 🎥 **Live Kamera-Erkennung** mit CameraX
-- 📸 **Auto-Capture** (30 Fotos bei Schmetterlings-Detektion)
-- 🖱️ **Manueller Modus** nach Auto-Phase
-- 🏆 **Top-9 Galerie** mit höchsten Konfidenz-Werten
-- 🤖 **TensorFlow Lite** YOLO Integration
-- 🎨 **Material Design** UI
+### Main 
+- Prasentation Branch
+
+### App (vibecode-ertch Branch)
+
+- **Auto-Capture** (bis zu 30 Fotos bei Schmetterlings-Detektion)
+- **Manueller Modus** nach Auto-Phase
+- **Top-9 Galerie** mit höchsten Konfidenz-Werten
+- **TensorFlow Lite** YOLO Integration
+- **Material Design** UI
 
 ### KI Training (tensorflow-yolo-training Branch)
-- 🧠 **YOLO Training Pipeline** für Schmetterlings-Erkennung
-- 📊 **Modell-Evaluation** und Metriken
-- 📱 **TensorFlow Lite Export** für Android Integration
-- 🏷️ **10 Schmetterlings-Klassen** vordefiniert
-- 📁 **Dataset-Struktur** für Training/Validation/Test
+- **YOLO Training Pipeline** für Schmetterlings-Erkennung
+- **Modell-Evaluation** und Metriken
+- **TensorFlow Lite Export** für Android Integration
+- **10 Schmetterlings-Klassen** vordefiniert
+- **Dataset-Struktur** für Training/Validation/Test
+
 
 ## Getting Started
 
@@ -49,11 +57,3 @@ git checkout tensorflow-yolo-training
 # python train_butterfly_yolo.py
 ```
 
-## Workflow
-1. **Daten sammeln** → Schmetterlings-Bilder annotieren
-2. **Modell trainieren** → `tensorflow-yolo-training` Branch
-3. **TFLite exportieren** → Für Android Integration
-4. **App entwickeln** → `vibecode-ertch` Branch
-5. **Testing & Deployment** → Ready for Production
-
-Ready for both AI Training and Android Development! 🚀

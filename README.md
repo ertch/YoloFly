@@ -11,6 +11,12 @@ Android App für automatische Schmetterlings-Erkennung mit YOLO und TensorFlow L
 - **develop**
     - every feature branch should originate from develop
 
+### feature/base-structure
+- **feature/base-structure**
+    - the base structure of the app
+    - no real functionality
+    - starting point of development
+
 ### KI Training
 - **tensorflow-yolo-training** - TensorFlow/YOLO Modell-Training [vibecoded] (Training Branch)
 

@@ -5,10 +5,13 @@ Android App für automatische Schmetterlings-Erkennung mit YOLO und TensorFlow L
 ## Branches
 
 ### Repository Management
-- **main** 
+- **main**
 
+### Development Branch
+- **develop**
+    - every feature branch should originate from develop
 
-### KI Training 
+### KI Training
 - **tensorflow-yolo-training** - TensorFlow/YOLO Modell-Training [vibecoded] (Training Branch)
 
 
@@ -19,7 +22,7 @@ Android App für automatische Schmetterlings-Erkennung mit YOLO und TensorFlow L
 
 ## Features
 
-### Main 
+### Main
 - Prasentation Branch
 
 ### App (vibecode-ertch Branch)

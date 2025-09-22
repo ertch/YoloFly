@@ -1,0 +1,48 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - '**'   # runs on any branch
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint-and-test:
+    name: Lint & Instrumented Tests
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up JDK 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Step 3: Set up Android SDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 33
+          build-tools: 33.0.2
+
+      # Step 4: Grant Gradle Wrapper permissions
+      - name: Make Gradle Wrapper executable
+        run: chmod +x ./gradlew
+
+      # Step 5: Run Lint (fail if errors exist)
+      - name: Run Lint
+        run: ./gradlew lint --fail-on-error
+
+      # Step 6: Run Instrumented Tests
+      - name: Run Instrumented Tests
+        run: ./gradlew connectedAndroidTest

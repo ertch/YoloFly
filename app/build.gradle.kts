@@ -28,6 +28,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -35,8 +36,14 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         viewBinding = true
+    }
+
+    // Fail build if lint errors exist
+    lint {
+        abortOnError = true
     }
 }
 
@@ -55,4 +62,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+// Optional: Make sure Gradle knows to use the wrapper version (for CI)
+tasks.withType<Wrapper> {
+    gradleVersion = "8.14.3"
 }

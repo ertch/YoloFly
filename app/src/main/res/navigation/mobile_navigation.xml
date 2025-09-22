@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/nav_speciescatalog"
-        android:name="com.example.butterflydetector.ui.slideshow.SpeciesCatalogFragment"
+        android:name="com.example.butterflydetector.ui.speciescatalog.SpeciesCatalogFragment"
         android:label="@string/menu_speciescatalog"
         tools:layout="@layout/fragment_speciescatalog" />
 

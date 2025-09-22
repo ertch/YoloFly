@@ -1,5 +1,0 @@
-# YOLO Dependencies (based on install_instructions.md)
-torch==2.2.2
-torchvision==0.17.2
-ultralytics==8.2.90
-opencv-python==4.9.0.80

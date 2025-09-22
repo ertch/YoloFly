@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.butterflydetector.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_photoselection"
+        android:name="com.example.butterflydetector.ui.photoselection.PhotoSelectionFragment"
+        android:label="@string/menu_photoselection"
+        tools:layout="@layout/fragment_photoselection" />
+
+    <fragment
+        android:id="@+id/nav_speciescatalog"
+        android:name="com.example.butterflydetector.ui.speciescatalog.SpeciesCatalogFragment"
+        android:label="@string/menu_speciescatalog"
+        tools:layout="@layout/fragment_speciescatalog" />
+
+    <fragment
+        android:id="@+id/nav_transects"
+        android:name="com.example.butterflydetector.ui.transects.TransectsFragment"
+        android:label="@string/menu_transects"
+        tools:layout="@layout/fragment_transects" />
+
+    <fragment
+        android:id="@+id/nav_transectwalks"
+        android:name="com.example.butterflydetector.ui.transectwalks.TransectwalksFragment"
+        android:label="@string/menu_transectwalks"
+        tools:layout="@layout/fragment_transectwalks" />
+</navigation>

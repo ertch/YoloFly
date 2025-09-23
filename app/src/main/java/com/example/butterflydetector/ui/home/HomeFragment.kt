@@ -2,11 +2,7 @@ package com.example.butterflydetector.ui.home
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
-import android.graphics.Rect
-import android.graphics.YuvImage
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -22,7 +18,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.butterflydetector.databinding.FragmentHomeBinding
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -54,7 +49,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -134,8 +129,7 @@ class HomeFragment : Fragment() {
                     this, cameraSelector, preview, imageCapture, imageAnalyzer
                 )
 
-                // Start auto-capturing immediately when camera starts
-                homeViewModel.startCapturing()
+                // Camera is ready but not capturing automatically
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -185,14 +179,19 @@ class HomeFragment : Fragment() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     // Load the captured image as bitmap and store in memory
                     try {
-                        val bitmap = BitmapFactory.decodeFile(output.savedUri?.path)
-                        if (bitmap != null) {
-                            homeViewModel.addPhoto(bitmap)
-                            Log.d(TAG, "Photo captured and stored in memory")
-                        }
-                        // Delete the temporary file
-                        output.savedUri?.path?.let { path ->
-                            java.io.File(path).delete()
+                        val file = output.savedUri?.path?.let { java.io.File(it) }
+                        if (file?.exists() == true) {
+                            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                            if (bitmap != null) {
+                                homeViewModel.addPhoto(bitmap)
+                                Log.d(TAG, "Photo captured and stored in memory. Total: ${homeViewModel.photoCount.value}")
+                            } else {
+                                Log.e(TAG, "Failed to decode bitmap from file")
+                            }
+                            // Delete the temporary file
+                            file.delete()
+                        } else {
+                            Log.e(TAG, "Temporary file not found")
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error processing captured photo", e)
@@ -204,8 +203,15 @@ class HomeFragment : Fragment() {
 
     fun captureAdditionalPhoto() {
         if (imageCapture != null) {
-            capturePhoto()
-            Toast.makeText(requireContext(), "Additional photo captured!", Toast.LENGTH_SHORT).show()
+            if (homeViewModel.isCapturing.value == true) {
+                // If already capturing, take an additional photo
+                capturePhoto()
+                Toast.makeText(requireContext(), "Additional photo captured!", Toast.LENGTH_SHORT).show()
+            } else {
+                // If not capturing, start the capture process
+                homeViewModel.startCapturing()
+                Toast.makeText(requireContext(), "Photo capture started!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

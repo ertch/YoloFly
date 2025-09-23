@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 class HomeViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "Camera Ready"
+        value = "Camera Ready - Press camera button to start taking photos"
     }
     val text: LiveData<String> = _text
 
@@ -39,12 +39,13 @@ class HomeViewModel : ViewModel() {
     fun addPhoto(bitmap: Bitmap) {
         _capturedPhotos.add(bitmap)
         _photoCount.value = _capturedPhotos.size
+        println("[v0] Photo added to ViewModel. Total count: ${_capturedPhotos.size}")
     }
 
     fun clearPhotos() {
         _capturedPhotos.clear()
         _photoCount.value = 0
-        _text.value = "Camera Ready"
+        _text.value = "Camera Ready - Press camera button to start taking photos"
     }
 
     override fun onCleared() {

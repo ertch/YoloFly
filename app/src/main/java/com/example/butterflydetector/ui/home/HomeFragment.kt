@@ -2,7 +2,11 @@ package com.example.butterflydetector.ui.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.butterflydetector.databinding.FragmentHomeBinding
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

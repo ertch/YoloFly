@@ -13,6 +13,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.butterflydetector.databinding.ActivityMainBinding
+import com.example.butterflydetector.ui.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -111,16 +112,28 @@ class MainActivity : AppCompatActivity() {
 
         // Set click listeners for bottom navigation
         photoselectionBtn?.setOnClickListener {
+            getCurrentHomeFragment()?.stopPhotoCapture()
             navController.navigate(R.id.nav_photoselection)
         }
 
         cameraBtn?.setOnClickListener {
-            Toast.makeText(this, "Automated photo capture - To be implemented later", Toast.LENGTH_SHORT).show()
+            val currentFragment = getCurrentHomeFragment()
+            if (currentFragment != null) {
+                currentFragment.captureAdditionalPhoto()
+            } else {
+                // Navigate to home if not already there
+                navController.navigate(R.id.nav_home)
+            }
         }
 
         transectsBtn?.setOnClickListener {
             navController.navigate(R.id.nav_transects)
         }
+    }
+
+    private fun getCurrentHomeFragment(): HomeFragment? {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+        return navHostFragment?.childFragmentManager?.fragments?.firstOrNull { it is HomeFragment } as? HomeFragment
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

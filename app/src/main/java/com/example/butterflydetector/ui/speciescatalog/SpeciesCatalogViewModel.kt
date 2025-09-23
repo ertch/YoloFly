@@ -8,33 +8,32 @@ import com.example.butterflydetector.data.ButterflyRepository
 
 class SpeciesCatalogViewModel : ViewModel() {
 
-    private val _butterflies = MutableLiveData<List<Butterfly>>()
-    val butterflies: LiveData<List<Butterfly>> = _butterflies
+    private val allButterflies: List<Butterfly> = ButterflyRepository.getAllButterflies()
 
-    private val _filteredButterflies = MutableLiveData<List<Butterfly>>()
+    private val _filteredButterflies = MutableLiveData<List<Butterfly>>(allButterflies)
     val filteredButterflies: LiveData<List<Butterfly>> = _filteredButterflies
 
-    private val _selectedSpecies = MutableLiveData<String>()
-    val selectedSpecies: LiveData<String> = _selectedSpecies
-
-    private val allButterflies = ButterflyRepository.getAllButterflies()
-
-    init {
-        _butterflies.value = allButterflies
-        _filteredButterflies.value = allButterflies
-        _selectedSpecies.value = "All Species"
+    fun getSpeciesList(): List<String> {
+        // nur die Arten ohne all species, da ohne filter automatisch alle angezeigt werden
+        return allButterflies.map { it.species }
+            .distinct()
+            .sorted()
     }
 
-    fun filterBySpecies(species: String) {
-        _selectedSpecies.value = species
-        _filteredButterflies.value = if (species == "All Species") {
-            allButterflies
-        } else {
-            allButterflies.filter { it.species == species }
+    fun filterButterflies(selectedSpecies: List<String>, onlyFavorites: Boolean) {
+        _filteredButterflies.value = allButterflies.filter { butterfly ->
+            val speciesMatch = selectedSpecies.isEmpty() || butterfly.species in selectedSpecies
+            val favoriteMatch = !onlyFavorites || butterfly.isFavorite
+            speciesMatch && favoriteMatch
         }
     }
 
-    fun getSpeciesList(): List<String> {
-        return ButterflyRepository.getSpeciesList()
+
+    fun filterByMultipleSpecies(species: List<String>) {
+        _filteredButterflies.value = if (species.isEmpty()) {
+            allButterflies
+        } else {
+            allButterflies.filter { it.species in species }
+        }
     }
 }

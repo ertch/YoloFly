@@ -8,5 +8,7 @@ data class Butterfly(
     val description: String,
     val habitat: String,
     val wingspan: String,
-    val flightPeriod: String
+    val flightPeriod: String,
+    var isFavorite: Boolean = false,
+    var isPhotographed: Boolean = false
 )

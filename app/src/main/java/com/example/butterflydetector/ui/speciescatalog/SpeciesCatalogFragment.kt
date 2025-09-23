@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -45,18 +44,36 @@ class SpeciesCatalogFragment : Fragment() {
     }
 
     private fun setupSpeciesFilter() {
-        val speciesAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
-            viewModel.getSpeciesList()
-        )
+        val speciesList = viewModel.getSpeciesList().toMutableList()
+        speciesList.add("Favorites")  // Favorites als Option hinzufügen
 
-        binding.speciesFilterDropdown.setAdapter(speciesAdapter)
-        binding.speciesFilterDropdown.setText("All Species", false)
+        val selectedItems = mutableSetOf<String>()
+        binding.speciesFilterDropdown.setText("Select species...", false)
 
-        binding.speciesFilterDropdown.setOnItemClickListener { _, _, position, _ ->
-            val selectedSpecies = viewModel.getSpeciesList()[position]
-            viewModel.filterBySpecies(selectedSpecies)
+        binding.speciesFilterDropdown.setOnClickListener {
+            val checkedItems = speciesList.map { it in selectedItems }.toBooleanArray()
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Select species")
+                .setMultiChoiceItems(speciesList.toTypedArray(), checkedItems) { _, which, isChecked ->
+                    val selected = speciesList[which]
+                    if (isChecked) selectedItems.add(selected) else selectedItems.remove(selected)
+                }
+                .setPositiveButton("Apply") { _, _ ->
+                    // Favorites separat abfragen
+                    val onlyFavorites = "Favorites" in selectedItems
+                    val selectedSpecies = selectedItems.filter { it != "Favorites" }
+
+                    viewModel.filterButterflies(selectedSpecies, onlyFavorites)
+
+                    // Text im Dropdown aktualisieren
+                    binding.speciesFilterDropdown.setText(
+                        if (selectedItems.isEmpty()) "Select species..." else selectedItems.joinToString(", "),
+                        false
+                    )
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 
@@ -80,9 +97,7 @@ class SpeciesCatalogFragment : Fragment() {
                 
                 Flight Period: ${butterfly.flightPeriod}
             """.trimIndent())
-            .setPositiveButton("Close") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setPositiveButton("Close") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 

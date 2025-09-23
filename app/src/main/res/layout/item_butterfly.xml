@@ -17,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="120dp">
 
+            <!-- Info Button Overlay -->
+
             <ImageView
                 android:id="@+id/butterfly_image"
                 android:layout_width="match_parent"
@@ -24,17 +26,7 @@
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_gallery" />
 
-            <!-- Info Button Overlay -->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/info_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:layout_margin="8dp"
-                app:fabSize="mini"
-                app:srcCompat="@android:drawable/ic_dialog_info"
-                app:backgroundTint="@android:color/white"
-                app:tint="@android:color/holo_blue_dark" />
+            <!-- Info Button (rechts oben) -->
 
         </FrameLayout>
 
@@ -50,6 +42,30 @@
             android:textStyle="bold"
             android:maxLines="2"
             android:ellipsize="end" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:layout_width="match_parent"
+            android:layout_height="45dp">
+
+<ImageButton                android:id="@+id/favorite_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:backgroundTint="@android:color/white"
+                app:fabSize="mini"
+                app:rippleColor="#FFEB3B"
+                app:srcCompat="@drawable/ic_star_border"
+                app:tint="#AAAAAA" />
+
+<ImageButton                android:id="@+id/info_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top|end"
+                app:backgroundTint="@android:color/white"
+                app:fabSize="mini"
+                app:rippleColor="@android:color/holo_blue_light"
+                app:srcCompat="@android:drawable/ic_dialog_info"
+                app:tint="@android:color/holo_blue_dark" />
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
 
     </LinearLayout>
 

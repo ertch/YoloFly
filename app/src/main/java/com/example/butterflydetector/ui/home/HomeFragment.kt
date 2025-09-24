@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.io.path.createTempFile
 
 class HomeFragment : Fragment() {
 
@@ -46,9 +45,6 @@ class HomeFragment : Fragment() {
     private val captureHandler = Handler(Looper.getMainLooper())
     private var captureRunnable: Runnable? = null
     private var isAutoCapturing = false
-
-    private val detectionHistory = ArrayDeque<Boolean>()  // stores last N frame results
-    private val HISTORY_SIZE = 5  // adjust N for smoothing
 
     companion object {
         private const val TAG = "HomeFragment"
@@ -166,29 +162,73 @@ class HomeFragment : Fragment() {
 
     private fun processImageForButterflyDetection(imageProxy: ImageProxy) {
         try {
-            val bitmap = imageProxyToBitmap(imageProxy)
+            val fullBitmap = imageProxyToBitmap(imageProxy)
 
             lifecycleScope.launch {
                 try {
-                    val isDetected = butterflyDetector.detectButterfly(bitmap)
+                    val width = fullBitmap.width
+                    val height = fullBitmap.height
+                    val rows = 3
+                    val cols = 3
+                    val quadrantWidth = width / cols
+                    val quadrantHeight = height / rows
 
-                    // Add current detection to history
-                    if (detectionHistory.size >= HISTORY_SIZE) detectionHistory.removeFirst()
-                    detectionHistory.addLast(isDetected)
+                    // Store detection results in grid
+                    val grid = Array(rows) { BooleanArray(cols) }
 
-                    // Count positives in history
-                    val positives = detectionHistory.count { it }
-                    val majorityDetected = positives > HISTORY_SIZE / 2
+                    for (row in 0 until rows) {
+                        for (col in 0 until cols) {
+                            val x = col * quadrantWidth
+                            val y = row * quadrantHeight
+                            val w = if (col == cols - 1) width - x else quadrantWidth
+                            val h = if (row == rows - 1) height - y else quadrantHeight
 
-                    // Update counter and UI
-                    currentButterflyCount = if (majorityDetected) 1 else 0
+                            val quadrant = Bitmap.createBitmap(fullBitmap, x, y, w, h)
+                            val detected = butterflyDetector.detectButterfly(quadrant)
+                            grid[row][col] = detected
+                            Log.d(TAG, "Quadrant [$row,$col] → $detected")
+                        }
+                    }
+
+                    // Merge adjacent positives (simple flood fill)
+                    val visited = Array(rows) { BooleanArray(cols) }
+                    var uniqueCount = 0
+
+                    fun floodFill(r: Int, c: Int) {
+                        if (r !in 0 until rows || c !in 0 until cols) return
+                        if (!grid[r][c] || visited[r][c]) return
+                        visited[r][c] = true
+                        // Visit 8 neighbors
+                        for (dr in -1..1) {
+                            for (dc in -1..1) {
+                                if (dr != 0 || dc != 0) {
+                                    floodFill(r + dr, c + dc)
+                                }
+                            }
+                        }
+                    }
+
+                    for (r in 0 until rows) {
+                        for (c in 0 until cols) {
+                            if (grid[r][c] && !visited[r][c]) {
+                                uniqueCount++
+                                floodFill(r, c)
+                            }
+                        }
+                    }
+
+                    // Update butterfly count & UI
+                    currentButterflyCount = uniqueCount
                     homeViewModel.updateButterflyCount(currentButterflyCount)
 
-                    // Update status text
-                    val status = if (majorityDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
+                    val status = if (uniqueCount > 0) {
+                        "Detection: $uniqueCount butterflies found!"
+                    } else {
+                        "Detection: No butterfly"
+                    }
                     homeViewModel.updateDetectionStatus(status)
 
-                    Log.d(TAG, "Detection history: $detectionHistory, Majority: $majorityDetected")
+                    Log.d(TAG, "Grid detection complete → $uniqueCount unique butterflies")
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in butterfly detection", e)

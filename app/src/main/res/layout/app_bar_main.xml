@@ -43,15 +43,4 @@
     <!-- Main content -->
     <include layout="@layout/content_main" />
 
-    <!-- Floating action button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="96dp"
-        app:srcCompat="@android:drawable/ic_dialog_info"
-        app:fabSize="mini" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

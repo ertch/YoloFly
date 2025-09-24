@@ -2,6 +2,7 @@ package com.example.butterflydetector
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
@@ -27,12 +28,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMain.toolbar)
-
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Information about Butterfly Detector", Snackbar.LENGTH_LONG)
-                .setAction("OK", null)
-                .setAnchorView(R.id.fab).show()
-        }
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -99,12 +94,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        setupBottomNavigation()
+        setupBottomNavigation(navController)
     }
 
-    private fun setupBottomNavigation() {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-
+    private fun setupBottomNavigation(navController: androidx.navigation.NavController) {
         // Find bottom navigation buttons
         val photoselectionBtn = findViewById<LinearLayout>(R.id.btn_photoselection)
         val cameraBtn = findViewById<LinearLayout>(R.id.btn_camera)
@@ -137,9 +130,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_info -> {
+                // Replace previous FAB behavior
+                Snackbar.make(binding.appBarMain.toolbar, "Information about Butterfly Detector", Snackbar.LENGTH_LONG)
+                    .setAction("OK", null)
+                    .show()
+                true
+            }
+            R.id.action_settings -> {
+                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

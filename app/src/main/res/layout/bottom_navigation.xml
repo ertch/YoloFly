@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:orientation="horizontal"
-    android:background="?attr/colorSurface"
+    android:background="@color/logo_dark_green"
     android:elevation="8dp"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
@@ -17,7 +17,7 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@color/logo_green"
         android:clickable="true"
         android:focusable="true">
 
@@ -45,7 +45,7 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@color/logo_green"
         android:clickable="true"
         android:focusable="true">
 
@@ -54,14 +54,14 @@
             android:layout_height="32dp"
             android:src="@drawable/ic_menu_camera"
             android:padding="6dp"
-            app:tint="?attr/colorPrimary" />
+            app:tint="?attr/colorOnSurface" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/menu_camera"
             android:textSize="12sp"
-            android:textColor="?attr/colorPrimary"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="4dp"
             android:textStyle="bold" />
 
@@ -75,7 +75,7 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@color/logo_green"
         android:clickable="true"
         android:focusable="true">
 

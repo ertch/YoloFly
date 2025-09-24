@@ -20,7 +20,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
+            isDebuggable = false
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -58,6 +62,17 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
+
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

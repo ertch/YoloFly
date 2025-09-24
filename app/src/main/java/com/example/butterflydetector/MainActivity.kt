@@ -2,6 +2,7 @@ package com.example.butterflydetector
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
@@ -13,6 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.butterflydetector.databinding.ActivityMainBinding
+import com.example.butterflydetector.ui.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,12 +28,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMain.toolbar)
-
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Information about Butterfly Detector", Snackbar.LENGTH_LONG)
-                .setAction("OK", null)
-                .setAnchorView(R.id.fab).show()
-        }
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -98,12 +94,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        setupBottomNavigation()
+        setupBottomNavigation(navController)
     }
 
-    private fun setupBottomNavigation() {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-
+    private fun setupBottomNavigation(navController: androidx.navigation.NavController) {
         // Find bottom navigation buttons
         val photoselectionBtn = findViewById<LinearLayout>(R.id.btn_photoselection)
         val cameraBtn = findViewById<LinearLayout>(R.id.btn_camera)
@@ -111,11 +105,18 @@ class MainActivity : AppCompatActivity() {
 
         // Set click listeners for bottom navigation
         photoselectionBtn?.setOnClickListener {
+            getCurrentHomeFragment()?.stopPhotoCapture()
             navController.navigate(R.id.nav_photoselection)
         }
 
         cameraBtn?.setOnClickListener {
-            Toast.makeText(this, "Automated photo capture - To be implemented later", Toast.LENGTH_SHORT).show()
+            val currentFragment = getCurrentHomeFragment()
+            if (currentFragment != null) {
+                currentFragment.captureAdditionalPhoto()
+            } else {
+                // Navigate to home if not already there
+                navController.navigate(R.id.nav_home)
+            }
         }
 
         transectsBtn?.setOnClickListener {
@@ -123,10 +124,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getCurrentHomeFragment(): HomeFragment? {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+        return navHostFragment?.childFragmentManager?.fragments?.firstOrNull { it is HomeFragment } as? HomeFragment
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_info -> {
+                // Replace previous FAB behavior
+                Snackbar.make(binding.appBarMain.toolbar, "Information about Butterfly Detector", Snackbar.LENGTH_LONG)
+                    .setAction("OK", null)
+                    .show()
+                true
+            }
+            R.id.action_settings -> {
+                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

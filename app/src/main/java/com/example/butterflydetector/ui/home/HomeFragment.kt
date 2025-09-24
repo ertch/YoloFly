@@ -70,7 +70,11 @@ class HomeFragment : Fragment() {
             val initialized = butterflyDetector.initialize()
             if (initialized) {
                 homeViewModel.updateDetectionStatus("Detection: Ready")
-                isDetectionEnabled = true
+
+                // Start analyzing frames AFTER detector is ready
+                imageAnalyzer?.setAnalyzer(cameraExecutor) { imageProxy ->
+                    processImageForButterflyDetection(imageProxy)
+                }
             } else {
                 homeViewModel.updateDetectionStatus("Detection: Failed to load model")
                 Toast.makeText(
@@ -164,51 +168,39 @@ class HomeFragment : Fragment() {
             lifecycleScope.launch {
                 try {
                     val isDetected = butterflyDetector.detectButterfly(bitmap)
-                    val newCount = if (isDetected) 1 else 0
 
-                    if (newCount != currentButterflyCount) {
-                        currentButterflyCount = newCount
-                        homeViewModel.updateButterflyCount(currentButterflyCount)
-                        val status = if (isDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
-                        homeViewModel.updateDetectionStatus(status)
-                    }
+                    // Log for debugging
+                    Log.d(TAG, "Butterfly detected: $isDetected")
+
+                    val status = if (isDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
+                    homeViewModel.updateDetectionStatus(status)
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in butterfly detection", e)
                     homeViewModel.updateDetectionStatus("Detection: Error")
+                } finally {
+                    imageProxy.close()
                 }
             }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error converting image for detection", e)
-        } finally {
             imageProxy.close()
         }
     }
 
     private fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap {
-        val yBuffer = imageProxy.planes[0].buffer // Y
-        val uBuffer = imageProxy.planes[1].buffer // U
-        val vBuffer = imageProxy.planes[2].buffer // V
-
-        val ySize = yBuffer.remaining()
-        val uSize = uBuffer.remaining()
-        val vSize = vBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + uSize + vSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vBuffer.get(nv21, ySize, vSize)
-        uBuffer.get(nv21, ySize + vSize, uSize)
-
-        val yuvImage = android.graphics.YuvImage(
-            nv21, android.graphics.ImageFormat.NV21,
-            imageProxy.width, imageProxy.height, null
-        )
-        val out = java.io.ByteArrayOutputStream()
-        yuvImage.compressToJpeg(android.graphics.Rect(0, 0, imageProxy.width, imageProxy.height), 100, out)
-        val imageBytes = out.toByteArray()
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        val buffer = imageProxy.planes[0].buffer
+        buffer.rewind()
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return Bitmap.createBitmap(
+            imageProxy.width,
+            imageProxy.height,
+            Bitmap.Config.ARGB_8888
+        ).also { bitmap ->
+            bitmap.copyPixelsFromBuffer(java.nio.ByteBuffer.wrap(bytes))
+        }
     }
 
     private fun startAutoCapture() {

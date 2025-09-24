@@ -110,10 +110,6 @@ class ButterflyDetector private constructor(private val context: Context) {
 
             // Take max probability across all classes
             val maxConfidence = probabilities.maxOrNull() ?: 0f
-
-            // Log max confidence for debugging
-            Log.d(TAG, "Max confidence: $maxConfidence")
-
             tensor.close()
             result.close()
 

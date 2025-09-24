@@ -12,17 +12,18 @@ class HomeViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
-    private val _isCapturing = MutableLiveData<Boolean>().apply {
-        value = false
-    }
+    private val _isCapturing = MutableLiveData<Boolean>().apply { value = false }
     val isCapturing: LiveData<Boolean> = _isCapturing
 
-    private val _photoCount = MutableLiveData<Int>().apply {
-        value = 0
-    }
+    private val _photoCount = MutableLiveData<Int>().apply { value = 0 }
     val photoCount: LiveData<Int> = _photoCount
 
-    // Store captured photos in memory
+    private val _butterflyCount = MutableLiveData<Int>().apply { value = 0 }
+    val butterflyCount: LiveData<Int> = _butterflyCount
+
+    private val _detectionStatus = MutableLiveData<String>().apply { value = "Detection: Ready" }
+    val detectionStatus: LiveData<String> = _detectionStatus
+
     private val _capturedPhotos = mutableListOf<Bitmap>()
     val capturedPhotos: List<Bitmap> get() = _capturedPhotos.toList()
 
@@ -39,7 +40,14 @@ class HomeViewModel : ViewModel() {
     fun addPhoto(bitmap: Bitmap) {
         _capturedPhotos.add(bitmap)
         _photoCount.value = _capturedPhotos.size
-        println("[v0] Photo added to ViewModel. Total count: ${_capturedPhotos.size}")
+    }
+
+    fun updateButterflyCount(count: Int) {
+        _butterflyCount.value = count
+    }
+
+    fun updateDetectionStatus(status: String) {
+        _detectionStatus.value = status
     }
 
     fun clearPhotos() {
@@ -50,7 +58,6 @@ class HomeViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        // Clear photos from memory when ViewModel is destroyed
         _capturedPhotos.clear()
     }
 }

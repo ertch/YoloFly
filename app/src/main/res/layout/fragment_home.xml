@@ -28,6 +28,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Added butterfly counter display -->
+        <TextView
+            android:id="@+id/butterfly_count_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Butterflies detected: 0"
+            android:textColor="@android:color/holo_orange_light"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Added detection status -->
+        <TextView
+            android:id="@+id/detection_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detection: Ready"
+            android:textColor="@android:color/holo_green_light"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:layout_marginBottom="8dp" />
+
         <!-- Status Text -->
         <TextView
             android:id="@+id/status_text"

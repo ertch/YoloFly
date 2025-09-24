@@ -22,7 +22,7 @@ class ButterflyDetector private constructor(private val context: Context) {
         private const val TAG = "ButterflyDetector"
         private const val MODEL_NAME = "butterfly_model.onnx"
         private const val INPUT_SIZE = 224
-        private const val DETECTION_THRESHOLD = 0.5f // Adjust based on your training
+        private const val DETECTION_THRESHOLD = 0.8f // Adjust based on your training
         @Volatile
         private var INSTANCE: ButterflyDetector? = null
 
@@ -108,12 +108,21 @@ class ButterflyDetector private constructor(private val context: Context) {
             val outputArray = result[0].value as Array<FloatArray>
             val probabilities = softmax(outputArray[0])
 
-            // Take max probability across all classes
+            // Log full probabilities
+            val probsString = probabilities.mapIndexed { index, prob ->
+                "Class$index: ${String.format("%.3f", prob)}"
+            }.joinToString(", ")
+            Log.d(TAG, "Class probabilities: [$probsString]")
+
+            // Max confidence
             val maxConfidence = probabilities.maxOrNull() ?: 0f
+            val isDetected = maxConfidence > DETECTION_THRESHOLD
+            Log.d(TAG, "Max confidence: $maxConfidence, Butterfly detected: $isDetected")
+
             tensor.close()
             result.close()
 
-            maxConfidence > DETECTION_THRESHOLD
+            isDetected
         } catch (e: Exception) {
             Log.e(TAG, "Detection error", e)
             false

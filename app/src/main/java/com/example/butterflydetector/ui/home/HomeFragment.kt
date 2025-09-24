@@ -170,7 +170,11 @@ class HomeFragment : Fragment() {
                     val isDetected = butterflyDetector.detectButterfly(bitmap)
 
                     // Log for debugging
+                    Log.d(TAG, "Max confidence and detection handled in ButterflyDetector")
                     Log.d(TAG, "Butterfly detected: $isDetected")
+
+                    currentButterflyCount = if (isDetected) 1 else 0
+                    homeViewModel.updateButterflyCount(currentButterflyCount)
 
                     val status = if (isDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
                     homeViewModel.updateDetectionStatus(status)

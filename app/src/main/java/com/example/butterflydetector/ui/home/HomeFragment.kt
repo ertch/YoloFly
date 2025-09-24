@@ -47,6 +47,9 @@ class HomeFragment : Fragment() {
     private var captureRunnable: Runnable? = null
     private var isAutoCapturing = false
 
+    private val detectionHistory = ArrayDeque<Boolean>()  // stores last N frame results
+    private val HISTORY_SIZE = 5  // adjust N for smoothing
+
     companion object {
         private const val TAG = "HomeFragment"
         private const val REQUEST_CODE_PERMISSIONS = 10
@@ -169,15 +172,23 @@ class HomeFragment : Fragment() {
                 try {
                     val isDetected = butterflyDetector.detectButterfly(bitmap)
 
-                    // Log for debugging
-                    Log.d(TAG, "Max confidence and detection handled in ButterflyDetector")
-                    Log.d(TAG, "Butterfly detected: $isDetected")
+                    // Add current detection to history
+                    if (detectionHistory.size >= HISTORY_SIZE) detectionHistory.removeFirst()
+                    detectionHistory.addLast(isDetected)
 
-                    currentButterflyCount = if (isDetected) 1 else 0
+                    // Count positives in history
+                    val positives = detectionHistory.count { it }
+                    val majorityDetected = positives > HISTORY_SIZE / 2
+
+                    // Update counter and UI
+                    currentButterflyCount = if (majorityDetected) 1 else 0
                     homeViewModel.updateButterflyCount(currentButterflyCount)
 
-                    val status = if (isDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
+                    // Update status text
+                    val status = if (majorityDetected) "Detection: Butterfly found!" else "Detection: No butterfly"
                     homeViewModel.updateDetectionStatus(status)
+
+                    Log.d(TAG, "Detection history: $detectionHistory, Majority: $majorityDetected")
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in butterfly detection", e)

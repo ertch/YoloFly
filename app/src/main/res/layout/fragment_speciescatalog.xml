@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/logo_green"
+    android:background="@color/book_pages"
+
+
     tools:context=".ui.speciescatalog.SpeciesCatalogFragment">
 
     <!-- Filter Spinner -->
@@ -14,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        android:background="@color/logo_green"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
         <AutoCompleteTextView

@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="logo_green">#d8e0cb</color>
     <color name="logo_dark_green">#395a51</color>
+    <color name="book_pages">#e5d3c1</color>
 </resources>

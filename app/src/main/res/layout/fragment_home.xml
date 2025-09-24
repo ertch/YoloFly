@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
+    android:layout_height="match_parent">
 
     <!-- Camera Preview -->
     <androidx.camera.view.PreviewView
@@ -16,7 +15,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!--Status Container -->
+    <!-- Grid overlay for counting -->
+    <com.example.butterflydetector.ui.home.GridOverlayView
+        android:id="@+id/grid_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/status_container" />
+
+    <!-- Status container -->
     <LinearLayout
         android:id="@+id/status_container"
         android:layout_width="match_parent"
@@ -24,11 +32,18 @@
         android:orientation="vertical"
         android:padding="16dp"
         android:background="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Added butterfly counter display -->
+        <Switch
+            android:id="@+id/mode_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Counting Mode"
+            android:textColor="@android:color/white"
+            android:checked="false"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"/>
+
         <TextView
             android:id="@+id/butterfly_count_text"
             android:layout_width="match_parent"
@@ -38,9 +53,8 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textAlignment="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="4dp" />
 
-        <!-- Added detection status -->
         <TextView
             android:id="@+id/detection_status_text"
             android:layout_width="match_parent"
@@ -49,29 +63,26 @@
             android:textColor="@android:color/holo_green_light"
             android:textSize="14sp"
             android:textAlignment="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="4dp" />
 
-        <!-- Status Text -->
         <TextView
             android:id="@+id/status_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Camera Ready"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="4dp" />
 
-        <!-- Photo Count -->
         <TextView
             android:id="@+id/photo_count_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Photos captured: 0"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             android:textSize="14sp"
             android:textAlignment="center" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,7 +11,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.Toast
+import android.widget.Switch
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
@@ -39,8 +41,8 @@ class HomeFragment : Fragment() {
     private var cameraProvider: ProcessCameraProvider? = null
 
     private lateinit var butterflyDetector: ButterflyDetector
-    private var isDetectionEnabled = false
     private var currentButterflyCount = 0
+    private var useCountingMode = false
 
     private val captureHandler = Handler(Looper.getMainLooper())
     private var captureRunnable: Runnable? = null
@@ -50,8 +52,11 @@ class HomeFragment : Fragment() {
         private const val TAG = "HomeFragment"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-        private const val CAPTURE_INTERVAL_MS = 500L // 0.5 seconds
+        private const val CAPTURE_INTERVAL_MS = 500L
+        private const val HISTORY_SIZE = 5
     }
+
+    private val detectionHistory = ArrayDeque<Boolean>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,8 +74,6 @@ class HomeFragment : Fragment() {
             val initialized = butterflyDetector.initialize()
             if (initialized) {
                 homeViewModel.updateDetectionStatus("Detection: Ready")
-
-                // Start analyzing frames AFTER detector is ready
                 imageAnalyzer?.setAnalyzer(cameraExecutor) { imageProxy ->
                     processImageForButterflyDetection(imageProxy)
                 }
@@ -100,21 +103,24 @@ class HomeFragment : Fragment() {
             else if (!isCapturing && isAutoCapturing) stopAutoCapture()
         }
 
+        // Mode switch listener
+        binding.modeSwitch.setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
+            useCountingMode = isChecked
+            binding.gridOverlay.visibility = if (isChecked) View.VISIBLE else View.GONE
+            val modeText = if (isChecked) "Counting Mode" else "Simple Mode"
+            homeViewModel.updateDetectionStatus("Mode: $modeText")
+        }
+
         cameraExecutor = Executors.newSingleThreadExecutor()
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Request camera permissions and start camera
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
-        }
+        if (allPermissionsGranted()) startCamera()
+        else ActivityCompat.requestPermissions(
+            requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+        )
     }
 
     override fun onResume() {
@@ -124,30 +130,23 @@ class HomeFragment : Fragment() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
-
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
             }
-
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
-
             imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
-
             imageAnalyzer?.setAnalyzer(cameraExecutor) { imageProxy ->
-                if (isDetectionEnabled) processImageForButterflyDetection(imageProxy)
-                else imageProxy.close()
+                processImageForButterflyDetection(imageProxy)
             }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
                 cameraProvider?.unbindAll()
                 camera = cameraProvider?.bindToLifecycle(
@@ -162,74 +161,60 @@ class HomeFragment : Fragment() {
 
     private fun processImageForButterflyDetection(imageProxy: ImageProxy) {
         try {
-            val fullBitmap = imageProxyToBitmap(imageProxy)
-
+            val bitmap = imageProxyToBitmap(imageProxy)
             lifecycleScope.launch {
                 try {
-                    val width = fullBitmap.width
-                    val height = fullBitmap.height
-                    val rows = 3
-                    val cols = 3
-                    val quadrantWidth = width / cols
-                    val quadrantHeight = height / rows
+                    if (useCountingMode) {
+                        // Counting mode
+                        val rows = 3
+                        val cols = 3
+                        val quadrantWidth = bitmap.width / cols
+                        val quadrantHeight = bitmap.height / rows
+                        val grid = Array(rows) { BooleanArray(cols) }
 
-                    // Store detection results in grid
-                    val grid = Array(rows) { BooleanArray(cols) }
-
-                    for (row in 0 until rows) {
-                        for (col in 0 until cols) {
-                            val x = col * quadrantWidth
-                            val y = row * quadrantHeight
-                            val w = if (col == cols - 1) width - x else quadrantWidth
-                            val h = if (row == rows - 1) height - y else quadrantHeight
-
-                            val quadrant = Bitmap.createBitmap(fullBitmap, x, y, w, h)
-                            val detected = butterflyDetector.detectButterfly(quadrant)
-                            grid[row][col] = detected
-                            Log.d(TAG, "Quadrant [$row,$col] → $detected")
-                        }
-                    }
-
-                    // Merge adjacent positives (simple flood fill)
-                    val visited = Array(rows) { BooleanArray(cols) }
-                    var uniqueCount = 0
-
-                    fun floodFill(r: Int, c: Int) {
-                        if (r !in 0 until rows || c !in 0 until cols) return
-                        if (!grid[r][c] || visited[r][c]) return
-                        visited[r][c] = true
-                        // Visit 8 neighbors
-                        for (dr in -1..1) {
-                            for (dc in -1..1) {
-                                if (dr != 0 || dc != 0) {
-                                    floodFill(r + dr, c + dc)
-                                }
+                        for (r in 0 until rows) {
+                            for (c in 0 until cols) {
+                                val x = c * quadrantWidth
+                                val y = r * quadrantHeight
+                                val w = if (c == cols - 1) bitmap.width - x else quadrantWidth
+                                val h = if (r == rows - 1) bitmap.height - y else quadrantHeight
+                                val quad = Bitmap.createBitmap(bitmap, x, y, w, h)
+                                grid[r][c] = butterflyDetector.detectButterfly(quad)
                             }
                         }
-                    }
 
-                    for (r in 0 until rows) {
-                        for (c in 0 until cols) {
-                            if (grid[r][c] && !visited[r][c]) {
-                                uniqueCount++
-                                floodFill(r, c)
-                            }
+                        // Merge adjacent positives
+                        val visited = Array(rows) { BooleanArray(cols) }
+                        var uniqueCount = 0
+                        fun floodFill(r: Int, c: Int) {
+                            if (r !in 0 until rows || c !in 0 until cols) return
+                            if (!grid[r][c] || visited[r][c]) return
+                            visited[r][c] = true
+                            for (dr in -1..1) for (dc in -1..1) if (dr != 0 || dc != 0) floodFill(r + dr, c + dc)
                         }
-                    }
-
-                    // Update butterfly count & UI
-                    currentButterflyCount = uniqueCount
-                    homeViewModel.updateButterflyCount(currentButterflyCount)
-
-                    val status = if (uniqueCount > 0) {
-                        "Detection: $uniqueCount butterflies found!"
+                        for (r in 0 until rows) for (c in 0 until cols) if (grid[r][c] && !visited[r][c]) {
+                            uniqueCount++
+                            floodFill(r, c)
+                        }
+                        currentButterflyCount = uniqueCount
+                        homeViewModel.updateButterflyCount(currentButterflyCount)
+                        homeViewModel.updateDetectionStatus(
+                            if (uniqueCount > 0) "Detection: $uniqueCount butterflies found!"
+                            else "Detection: No butterfly"
+                        )
                     } else {
-                        "Detection: No butterfly"
+                        // Simple detection mode
+                        if (detectionHistory.size >= HISTORY_SIZE) detectionHistory.removeFirst()
+                        detectionHistory.addLast(butterflyDetector.detectButterfly(bitmap))
+                        val positives = detectionHistory.count { it }
+                        val majorityDetected = positives > HISTORY_SIZE / 2
+                        currentButterflyCount = if (majorityDetected) 1 else 0
+                        homeViewModel.updateButterflyCount(currentButterflyCount)
+                        homeViewModel.updateDetectionStatus(
+                            if (majorityDetected) "Detection: Butterfly found!"
+                            else "Detection: No butterfly"
+                        )
                     }
-                    homeViewModel.updateDetectionStatus(status)
-
-                    Log.d(TAG, "Grid detection complete → $uniqueCount unique butterflies")
-
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in butterfly detection", e)
                     homeViewModel.updateDetectionStatus("Detection: Error")
@@ -237,7 +222,6 @@ class HomeFragment : Fragment() {
                     imageProxy.close()
                 }
             }
-
         } catch (e: Exception) {
             Log.e(TAG, "Error converting image for detection", e)
             imageProxy.close()
@@ -282,18 +266,14 @@ class HomeFragment : Fragment() {
         val imageCapture = imageCapture ?: return
         val tempFile = File.createTempFile("photo", ".jpg", requireContext().cacheDir)
         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
-
-        imageCapture.takePicture(
-            outputFileOptions,
-            ContextCompat.getMainExecutor(requireContext()),
+        imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exception: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exception.message}", exception)
                 }
-
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     try {
-                        val file = output.savedUri?.path?.let { java.io.File(it) }
+                        val file = output.savedUri?.path?.let { File(it) }
                         if (file?.exists() == true) {
                             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                             if (bitmap != null) homeViewModel.addPhoto(bitmap)
@@ -303,8 +283,7 @@ class HomeFragment : Fragment() {
                         Log.e(TAG, "Error processing captured photo", e)
                     }
                 }
-            }
-        )
+            })
     }
 
     fun captureAdditionalPhoto() {
